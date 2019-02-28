@@ -6,8 +6,9 @@ import (
 )
 
 type Parser struct {
-	tokens   []string
-	position int
+	tokens    []string
+	position  int
+	currToken string
 }
 
 func New(fname string) *Parser {
@@ -24,6 +25,35 @@ func New(fname string) *Parser {
 }
 
 //métodos
-func (self Parser) HasMoreCommands() bool { // publico tem que iniciar com maiuscula
+func (self *Parser) HasMoreCommands() bool { // publico tem que iniciar com maiuscula
 	return self.position < len(self.tokens)
+}
+
+func (self *Parser) Advance() {
+	self.currToken = self.tokens[self.position]
+	self.position++
+}
+
+func (self *Parser) CommandType() string {
+	switch self.currToken {
+	case "add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not":
+		return "arithmetic"
+	default:
+		return self.currToken
+	}
+}
+
+func (self *Parser) Arg1() string {
+
+	if self.CommandType() == "arithmetic" {
+		return self.currToken
+	} else {
+		self.Advance()
+		return self.currToken
+	}
+
+}
+func (self *Parser) Arg2() string {
+	self.Advance()
+	return self.currToken
 }
