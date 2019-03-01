@@ -13,7 +13,11 @@ type Parser struct {
 
 func New(fname string) *Parser {
 	p := new(Parser)
-	reComments, _ := regexp.Compile("//.*\n")
+	reComments, err := regexp.Compile("//.*\n")
+	if err != nil {
+		// tratar o erro aqui
+		panic("Error")
+	}
 	reTokens, _ := regexp.Compile("[a-z][a-z]*|[1-9][0-9]*")
 	code, _ := ioutil.ReadFile(fname)
 	codeProc := reComments.ReplaceAllString(string(code), "")
