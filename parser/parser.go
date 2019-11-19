@@ -3,6 +3,9 @@ package parser
 import (
 	"io/ioutil"
 	"regexp"
+	"strconv"
+
+	"github.com/profsergiocosta/vm-translator/command"
 )
 
 type Parser struct {
@@ -28,36 +31,34 @@ func New(fname string) *Parser {
 	return p
 }
 
-//métodos
-func (self *Parser) HasMoreCommands() bool { // publico tem que iniciar com maiuscula
-	return self.position < len(self.tokens)
+func (p *Parser) HasMoreCommands() bool {
+	return p.position < len(p.tokens)
 }
 
-func (self *Parser) Advance() {
-	self.currToken = self.tokens[self.position]
-	self.position++
+func (p *Parser) Advance() {
+	p.currToken = p.tokens[p.position]
+	p.position++
 }
 
-func (self *Parser) CommandType() string {
-	switch self.currToken {
+func (p *Parser) NextCommand() command.Command {
+	p.Advance()
+	switch p.currToken {
 	case "add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not":
-		return "arithmetic"
-	default:
-		return self.currToken
+		return command.Arithmetic{Name: p.currToken}
+	case "push", "pop", "function", "call":
+		cmd := p.currToken
+		p.Advance()
+		arg1 := p.currToken
+		p.Advance()
+		arg2, _ := strconv.Atoi(p.currToken)
+
+		switch cmd {
+		case "push":
+			return command.Push{Segment: arg1, Index: arg2}
+		case "pop":
+			return command.Pop{Segment: arg1, Index: arg2}
+		}
+
 	}
-}
-
-func (self *Parser) Arg1() string {
-
-	if self.CommandType() == "arithmetic" {
-		return self.currToken
-	} else {
-		self.Advance()
-		return self.currToken
-	}
-
-}
-func (self *Parser) Arg2() string {
-	self.Advance()
-	return self.currToken
+	return command.UndefinedCommand{}
 }
