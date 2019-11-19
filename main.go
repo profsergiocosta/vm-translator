@@ -64,7 +64,11 @@ func main() {
 				if filepath.Ext(f.Name()) == ".vm" {
 					abs, _ := filepath.Abs(path + "/" + f.Name())
 					fmt.Printf("Translating: %s \n", abs)
-
+					fmt.Println(filenameWithoutExtension(path) + ".asm")
+					code := codewriter.New(filenameWithoutExtension(path) + ".asm")
+					translate(abs, code)
+					code.CloseFile()
+				
 				}
 
 			}
@@ -74,6 +78,7 @@ func main() {
 			fmt.Printf("Translating: %s \n", abs)
 			code := codewriter.New(filenameWithoutExtension(path) + ".asm")
 			translate(path, code)
+			code.CloseFile()
 		}
 
 	}

@@ -278,6 +278,727 @@ func (code *CodeWriter) writeArithmeticLt() {
 	code.labelCount++
 }
 
+func (code *CodeWriter) writeLabel (label string ) {
+	code.write ("("+label+")");
+}
+
+func (code *CodeWriter) writeGoto (label string) {
+	code.write ("@" + label );
+	code.write ("0;JMP");
+}
+
+func (code *CodeWriter) writeIf (label string) {
+	code.write ("@SP");
+	code.write ("AM=M-1");
+	code.write ("D=M");
+	code.write ("M=0");
+	code.write ("@"+label);
+	code.write ("D;JNE");
+}
+
+func (code *CodeWriter) writeFunction(funcName string,nLocals int){
+
+
+	loopLabel := funcName + "_INIT_LOCALS_LOOP"
+	loopEndLabel := funcName + "_INIT_LOCALS_END"
+
+    code.write("(" + funcName + ")" + "// initializa local variables");
+	code.write( fmt.Sprintf("@%d", nLocals));
+	   code.write("D=A");
+	    code.write("@R13"); // temp
+	    code.write("M=D");
+	    code.write("(" + loopLabel + ")");
+	    code.write("@" + loopEndLabel);
+	    code.write("D;JEQ");
+	    code.write("@0");
+	    code.write("D=A");
+	    code.write("@SP");
+	    code.write("A=M");
+	    code.write("M=D");
+	    code.write("@SP");
+	    code.write("M=M+1");
+	    code.write("@R13");
+	    code.write("MD=M-1");
+	    code.write("@" + loopLabel);
+	    code.write("0;JMP");
+	    code.write("(" + loopEndLabel + ")");               
+}
+
+
+void CodeWriter::writeReturn () {
+
+	
+	/*  
+        FRAME = LCL         // FRAME is a temporary var
+        RET = *(FRAME-5)    // put the return-address in a temporary var
+        *ARG = pop()        // reposition the return value for the caller
+        SP = ARG + 1        // restore SP of the caller
+        THAT = *(FRAME - 1) // restore THAT of the caller
+        THIS = *(FRAME - 2) // restore THIS of the caller
+        ARG = *(FRAME - 3)  // restore ARG of the caller
+        LCL = *(FRAME - 4)  // restore LCL of the caller
+        goto RET            // goto return-address (in the caller's code)
+    */
+
+
+
+
+
+
+
+
+    write("@LCL"); // FRAME = LCL
+
+    write("D=M");
+
+    write("@R13"); void CodeWriter::writeReturn () {
+	
+	/*
+	write ("@LCL // return "); // endFrame = LCL
+	write ("D=M");
+	write ("@R13");
+	write ("M=D");
+	
+	write ("@5");  // retAdress = *(endFrame - 5) // <<"@5\nD=A\n@R13\nA=M-D\nD=M\n@R14\nM=D\n"
+	write ("A=D-A");
+	write ("D=M");
+	write ("@R14");
+	write ("M=D");
+	
+	write ("@SP // *arg = pop ()"); // *arg = pop ()
+	write ("AM=M-1");
+	write ("D=M");
+	write ("@ARG");
+	write ("A=M");
+	write ("M=D");
+	
+	write ("D=A // Sp = arg+ 1"); 
+	write ("@SP");
+	write ("M=D+1");
+	
+	write("@R13"); // THAT = *(FRAME-1)
+	write("AM=M-1");
+	write("D=M");
+	write("@THAT");
+	write("M=D");
+	
+	write("@R13"); // THIS = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@THIS");
+	write("M=D");
+	
+	write("@R13"); // ARG = *(FRAME-3)
+	write("AM=M-1");
+	write("D=M");
+	write("@ARG");
+	write("M=D");
+	
+	write("@R13"); // THAT = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@LCL");
+	write("M=D");
+	
+	
+	write ("@R14"); // goto ret
+	write ("A=M");
+	write ("0;JMP");
+	*/
+	
+	/*  
+        FRAME = LCL         // FRAME is a temporary var
+        RET = *(FRAME-5)    // put the return-address in a temporary var
+        *ARG = pop()        // reposition the return value for the caller
+        SP = ARG + 1        // restore SP of the caller
+        THAT = *(FRAME - 1) // restore THAT of the caller
+        THIS = *(FRAME - 2) // restore THIS of the caller
+        ARG = *(FRAME - 3)  // restore ARG of the caller
+        LCL = *(FRAME - 4)  // restore LCL of the caller
+        goto RET            // goto return-address (in the caller's code)
+    */
+
+
+
+
+
+
+
+
+    write("@LCL"); // FRAME = LCL
+
+    write("D=M");
+
+    write("@R13"); // R13 -> FRAME
+
+    write("M=D");
+
+
+
+
+    write("@5"); // RET = *(FRAME-5)
+
+    write("A=D-A");
+
+    write("D=M");
+
+    write("@R14"); // R14 -> RET
+
+    write("M=D");
+
+
+
+
+    write("@SP"); // *ARG = pop()
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("A=M");
+
+    write("M=D");
+
+
+
+
+    write("D=A"); // SP = ARG+1
+
+    write("@SP");
+
+    write("M=D+1");
+
+
+
+
+    write("@R13"); // THAT = *(FRAME-1)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THAT");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // THIS = *(FRAME-2)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THIS");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // ARG = *(FRAME-3)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // LCL = *(FRAME-4)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@LCL");
+
+    write("M=D");
+
+
+
+
+    write("@R14"); // goto RET
+
+    write("A=M");
+
+    write("0;JMP");
+  
+
+}
+
+    write("M=D");
+
+
+
+
+    write("@5"); //void CodeWriter::writeReturn () {
+	
+	/*
+	write ("@LCL // return "); // endFrame = LCL
+	write ("D=M");
+	write ("@R13");
+	write ("M=D");
+	
+	write ("@5");  // retAdress = *(endFrame - 5) // <<"@5\nD=A\n@R13\nA=M-D\nD=M\n@R14\nM=D\n"
+	write ("A=D-A");
+	write ("D=M");
+	write ("@R14");
+	write ("M=D");
+	
+	write ("@SP // *arg = pop ()"); // *arg = pop ()
+	write ("AM=M-1");
+	write ("D=M");
+	write ("@ARG");
+	write ("A=M");
+	write ("M=D");
+	
+	write ("D=A // Sp = arg+ 1"); 
+	write ("@SP");
+	write ("M=D+1");
+	
+	write("@R13"); // THAT = *(FRAME-1)
+	write("AM=M-1");
+	write("D=M");
+	write("@THAT");
+	write("M=D");
+	
+	write("@R13"); // THIS = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@THIS");
+	write("M=D");
+	
+	write("@R13"); // ARG = *(FRAME-3)
+	write("AM=M-1");
+	write("D=M");
+	write("@ARG");
+	write("M=D");
+	
+	write("@R13"); // THAT = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@LCL");
+	write("M=D");
+	
+	
+	write ("@R14"); // goto ret
+	write ("A=M");
+	write ("0;JMP");
+	*/
+	
+	/*  
+        FRAME = LCL         // FRAME is a temporary var
+        RET = *(FRAME-5)    // put the return-address in a temporary var
+        *ARG = pop()        // reposition the return value for the caller
+        SP = ARG + 1        // restore SP of the caller
+        THAT = *(FRAME - 1) // restore THAT of the caller
+        THIS = *(FRAME - 2) // restore THIS of the caller
+        ARG = *(FRAME - 3)  // restore ARG of the caller
+        LCL = *(FRAME - 4)  // restore LCL of the caller
+        goto RET            // goto return-address (in the caller's code)
+    */
+
+
+
+
+
+
+
+
+    write("@LCL"); // FRAME = LCL
+
+    write("D=M");
+
+    write("@R13"); // R13 -> FRAME
+
+    write("M=D");
+
+
+
+
+    write("@5"); // RET = *(FRAME-5)
+
+    write("A=D-A");
+
+    write("D=M");
+
+    write("@R14"); // R14 -> RET
+
+    write("M=D");
+
+
+
+
+    write("@SP"); // *ARG = pop()
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("A=M");
+
+    write("M=D");
+
+
+
+
+    write("D=A"); // SP = ARG+1
+
+    write("@SP");
+
+    write("M=D+1");
+
+
+
+
+    write("@R13"); // THAT = *(FRAME-1)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THAT");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // THIS = *(FRAME-2)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THIS");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // ARG = *(FRAME-3)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // LCL = *(FRAME-4)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@LCL");
+
+    write("M=D");
+
+
+
+
+    write("@R14"); // goto RET
+
+    write("A=M");
+
+    write("0;JMP");
+  
+
+}
+
+    write("A=D-A");void CodeWriter::writeReturn () {
+	
+	/*
+	write ("@LCL // return "); // endFrame = LCL
+	write ("D=M");
+	write ("@R13");
+	write ("M=D");
+	
+	write ("@5");  // retAdress = *(endFrame - 5) // <<"@5\nD=A\n@R13\nA=M-D\nD=M\n@R14\nM=D\n"
+	write ("A=D-A");
+	write ("D=M");
+	write ("@R14");
+	write ("M=D");
+	
+	write ("@SP // *arg = pop ()"); // *arg = pop ()
+	write ("AM=M-1");
+	write ("D=M");
+	write ("@ARG");
+	write ("A=M");
+	write ("M=D");
+	
+	write ("D=A // Sp = arg+ 1"); 
+	write ("@SP");
+	write ("M=D+1");
+	
+	write("@R13"); // THAT = *(FRAME-1)
+	write("AM=M-1");
+	write("D=M");
+	write("@THAT");
+	write("M=D");
+	
+	write("@R13"); // THIS = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@THIS");
+	write("M=D");
+	
+	write("@R13"); // ARG = *(FRAME-3)
+	write("AM=M-1");
+	write("D=M");
+	write("@ARG");
+	write("M=D");
+	
+	write("@R13"); // THAT = *(FRAME-4)
+	write("AM=M-1");
+	write("D=M");
+	write("@LCL");
+	write("M=D");
+	
+	
+	write ("@R14"); // goto ret
+	write ("A=M");
+	write ("0;JMP");
+	*/
+	
+	/*  
+        FRAME = LCL         // FRAME is a temporary var
+        RET = *(FRAME-5)    // put the return-address in a temporary var
+        *ARG = pop()        // reposition the return value for the caller
+        SP = ARG + 1        // restore SP of the caller
+        THAT = *(FRAME - 1) // restore THAT of the caller
+        THIS = *(FRAME - 2) // restore THIS of the caller
+        ARG = *(FRAME - 3)  // restore ARG of the caller
+        LCL = *(FRAME - 4)  // restore LCL of the caller
+        goto RET            // goto return-address (in the caller's code)
+    */
+
+
+
+
+
+
+
+
+    write("@LCL"); // FRAME = LCL
+
+    write("D=M");
+
+    write("@R13"); // R13 -> FRAME
+
+    write("M=D");
+
+
+
+
+    write("@5"); // RET = *(FRAME-5)
+
+    write("A=D-A");
+
+    write("D=M");
+
+    write("@R14"); // R14 -> RET
+
+    write("M=D");
+
+
+
+
+    write("@SP"); // *ARG = pop()
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("A=M");
+
+    write("M=D");
+
+
+
+
+    write("D=A"); // SP = ARG+1
+
+    write("@SP");
+
+    write("M=D+1");
+
+
+
+
+    write("@R13"); // THAT = *(FRAME-1)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THAT");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // THIS = *(FRAME-2)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THIS");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // ARG = *(FRAME-3)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // LCL = *(FRAME-4)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@LCL");
+
+    write("M=D");
+
+
+
+
+    write("@R14"); // goto RET
+
+    write("A=M");
+
+    write("0;JMP");
+  
+
+}
+
+    write("D=M");
+
+    write("@R14"); // R14 -> RET
+
+    write("M=D");
+
+
+
+
+    write("@SP"); // *ARG = pop()
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("A=M");
+
+    write("M=D");
+
+
+
+
+    write("D=A"); // SP = ARG+1
+
+    write("@SP");
+
+    write("M=D+1");
+
+
+
+
+    write("@R13"); // THAT = *(FRAME-1)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THAT");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // THIS = *(FRAME-2)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@THIS");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // ARG = *(FRAME-3)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@ARG");
+
+    write("M=D");
+
+
+
+
+    write("@R13"); // LCL = *(FRAME-4)
+
+    write("AM=M-1");
+
+    write("D=M");
+
+    write("@LCL");
+
+    write("M=D");
+
+
+
+
+    write("@R14"); // goto RET
+
+    write("A=M");
+
+    write("0;JMP");
+  
+
+}
+
 func (code *CodeWriter) CloseFile() {
 	code.out.Close()
 }
