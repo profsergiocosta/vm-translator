@@ -22,6 +22,7 @@ func filenameWithoutExtension(fn string) string {
 type CodeWriter struct {
 	out        *os.File
 	moduleName string
+	labelCount int
 }
 
 func New(pathName string) *CodeWriter {
@@ -29,6 +30,7 @@ func New(pathName string) *CodeWriter {
 	check(err)
 
 	code := &CodeWriter{out: f}
+	code.labelCount = 0
 
 	return code
 }
@@ -51,7 +53,7 @@ func (code *CodeWriter) segmentPointer(segment string, index int) string {
 	case "pointer":
 		return fmt.Sprintf("R%d", 3+index)
 	case "static":
-		return fmt.Sprintf("%s.%s", code.moduleName, index)
+		return fmt.Sprintf("%s.%d", code.moduleName, index)
 	default:
 		return "ERROR"
 	}
@@ -131,6 +133,21 @@ func (code *CodeWriter) WriteArithmetic(cmd command.Arithmetic) {
 		code.writeArithmeticAdd()
 	case "sub":
 		code.writeArithmeticSub()
+	case "neg":
+		code.writeArithmeticNeg()
+	case "eq":
+		code.writeArithmeticEq()
+	case "gt":
+		code.writeArithmeticGt()
+	case "lt":
+		code.writeArithmeticLt()
+	case "and":
+		code.writeArithmeticAnd()
+	case "or":
+		code.writeArithmeticOr()
+	case "not":
+		code.writeArithmeticNot()
+	default:
 	}
 }
 
@@ -150,6 +167,115 @@ func (code *CodeWriter) writeArithmeticSub() {
 	code.write("D=M")
 	code.write("A=A-1")
 	code.write("M=M-D")
+}
+
+func (code *CodeWriter) writeArithmeticNeg() {
+	code.write("@SP // neg")
+	code.write("A=M")
+	code.write("A=A-1")
+	code.write("M=-M")
+}
+
+func (code *CodeWriter) writeArithmeticAnd() {
+	code.write("@SP // and")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("A=A-1")
+	code.write("M=D&M")
+}
+
+func (code *CodeWriter) writeArithmeticOr() {
+	code.write("@SP // or")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("A=A-1")
+	code.write("M=D|M")
+}
+
+func (code *CodeWriter) writeArithmeticNot() {
+	code.write("@SP // not")
+	code.write("A=M")
+	code.write("A=A-1")
+	code.write("M=!M")
+}
+
+func (code *CodeWriter) writeArithmeticEq() {
+
+	label := fmt.Sprintf("JEQ_%s_%d", code.moduleName, code.labelCount)
+	code.write("@SP // eq")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + label)
+	code.write("D;JEQ")
+	code.write("D=1")
+	code.write("(" + label + ")")
+	code.write("D=D-1")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
+}
+
+func (code *CodeWriter) writeArithmeticGt() {
+
+	labelTrue := fmt.Sprintf("JGT_TRUE_%s_%d", code.moduleName, code.labelCount)
+	labelFalse := fmt.Sprintf("JGT_FALSE_%s_%d", code.moduleName, code.labelCount)
+
+	code.write("@SP // gt")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + labelTrue)
+	code.write("D;JGT")
+	code.write("D=0")
+	code.write("@" + labelFalse)
+	code.write("0;JMP")
+	code.write("(" + labelTrue + ")")
+	code.write("D=-1")
+	code.write("(" + labelFalse + ")")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
+}
+
+func (code *CodeWriter) writeArithmeticLt() {
+
+	labelTrue := fmt.Sprintf("JLT_TRUE_%s_%d", code.moduleName, code.labelCount)
+	labelFalse := fmt.Sprintf("JLT_FALSE_%s_%d", code.moduleName, code.labelCount)
+
+	code.write("@SP // lt")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + labelTrue)
+	code.write("D;JLT")
+	code.write("D=0")
+	code.write("@" + labelFalse)
+	code.write("0;JMP")
+	code.write("(" + labelTrue + ")")
+	code.write("D=-1")
+	code.write("(" + labelFalse + ")")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
 }
 
 func (code *CodeWriter) CloseFile() {
