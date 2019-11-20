@@ -42,6 +42,12 @@ func translate(path string, code *codewriter.CodeWriter) {
 			code.WritePush(cmd.Segment, cmd.Index)
 		case command.Pop:
 			code.WritePop(cmd.Segment, cmd.Index)
+		case command.Label:
+			code.WriteLabel(cmd.Name)
+		case command.Goto:
+			code.WriteGoto(cmd.Label)
+		case command.IFGoto:
+			code.WriteIf(cmd.Label)
 		}
 	}
 	code.CloseFile()
@@ -68,7 +74,7 @@ func main() {
 					code := codewriter.New(filenameWithoutExtension(path) + ".asm")
 					translate(abs, code)
 					code.CloseFile()
-				
+
 				}
 
 			}

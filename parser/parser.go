@@ -42,9 +42,25 @@ func (p *Parser) Advance() {
 
 func (p *Parser) NextCommand() command.Command {
 	p.Advance()
+
 	switch p.currToken {
+
 	case "add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not":
 		return command.Arithmetic{Name: p.currToken}
+	case "label", "if-goto", "goto":
+		cmd := p.currToken
+
+		p.Advance()
+		arg1 := p.currToken
+		switch cmd {
+		case "label":
+			return command.Label{Name: arg1}
+		case "goto":
+			return command.Goto{Label: arg1}
+		case "if-goto":
+			return command.IFGoto{Label: arg1}
+
+		}
 	case "push", "pop", "function", "call":
 		cmd := p.currToken
 		p.Advance()
