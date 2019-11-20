@@ -16,18 +16,18 @@ type Parser struct {
 
 func New(fname string) *Parser {
 	p := new(Parser)
-	reComments, err := regexp.Compile("//.*\n")
+	reComments, err := regexp.Compile(`//.*`)
 	if err != nil {
 		// tratar o erro aqui
 		panic("Error")
 	}
-	reTokens, _ := regexp.Compile("[a-z][a-z]*|0|[1-9][0-9]*")
+	reTokens, _ := regexp.Compile("[a-zA-Z][_a-zA-Z|/-]*|0|[1-9][0-9]*")
+
 	code, _ := ioutil.ReadFile(fname)
 	codeProc := reComments.ReplaceAllString(string(code), "")
 
 	p.tokens = reTokens.FindAllString(codeProc, -1)
 	p.position = 0
-	//p.Advance()
 	return p
 }
 
@@ -49,7 +49,6 @@ func (p *Parser) NextCommand() command.Command {
 		return command.Arithmetic{Name: p.currToken}
 	case "label", "if-goto", "goto":
 		cmd := p.currToken
-
 		p.Advance()
 		arg1 := p.currToken
 		switch cmd {

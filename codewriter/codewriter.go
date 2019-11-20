@@ -62,12 +62,12 @@ func (code *CodeWriter) segmentPointer(segment string, index int) string {
 
 }
 
-func (code *CodeWriter) writeInit(){
-	code.write ("@256")
-	code.write ("D=A")
-	code.write ("@SP")
-	code.write ("M=D");
-	writeCall("Sys.init",0);
+func (code *CodeWriter) writeInit() {
+	code.write("@256")
+	code.write("D=A")
+	code.write("@SP")
+	code.write("M=D")
+	code.writeCall("Sys.init", 0)
 }
 
 func (code *CodeWriter) SetFileName(pathName string) {
@@ -111,14 +111,14 @@ func (code *CodeWriter) WritePush(seg string, index int) {
 func (code *CodeWriter) WritePop(seg string, index int) {
 	switch seg {
 	case "static", "temp", "pointer":
-		code.write(fmt.Sprintf("@SP // pop %s %d", seg, index))
+		code.write(fmt.Sprintf("@SP // pop %s %d ", seg, index))
 		code.write("M=M-1")
 		code.write("A=M")
 		code.write("D=M")
 		code.write(fmt.Sprintf("@%s", code.segmentPointer(seg, index)))
 		code.write("M=D")
 	case "local", "argument", "this", "that":
-		code.write(fmt.Sprintf("@%s // pop %s %d", code.segmentPointer(seg, index), seg, index))
+		code.write(fmt.Sprintf("@%s // pop %s %d ", code.segmentPointer(seg, index), seg, index))
 		code.write("D=M")
 		code.write(fmt.Sprintf("@%d", index))
 		code.write("D=D+A")
@@ -265,7 +265,7 @@ func (code *CodeWriter) writeArithmeticLt() {
 	labelTrue := fmt.Sprintf("JLT_TRUE_%s_%d", code.moduleName, code.labelCount)
 	labelFalse := fmt.Sprintf("JLT_FALSE_%s_%d", code.moduleName, code.labelCount)
 
-		code.write("@SP // lt")
+	code.write("@SP // lt")
 	code.write("AM=M-1")
 	code.write("D=M")
 	code.write("@SP")
@@ -289,7 +289,6 @@ func (code *CodeWriter) writeArithmeticLt() {
 }
 
 func (code *CodeWriter) WriteLabel(label string) {
-	fmt.Println("WriteLabel")
 	code.write("(" + label + ")")
 }
 
@@ -305,9 +304,10 @@ func (code *CodeWriter) WriteIf(label string) {
 	code.write("M=0")
 	code.write("@" + label)
 	code.write("D;JNE")
+
 }
 
-func (code *CodeWriter) writeFunction(funcName string, nLocals int) {
+func (code *CodeWriter) WriteFunction(funcName string, nLocals int) {
 
 	loopLabel := funcName + "_INIT_LOCALS_LOOP"
 	loopEndLabel := funcName + "_INIT_LOCALS_END"
@@ -352,7 +352,7 @@ func (code *CodeWriter) writeCall(funcName string, numArgs int) {
 
 	returnSymbol := fmt.Sprintf("%s__RETURN_%d", funcName, code.callCount)
 	code.callCount++
-	code.write(fmt.Sprintf ("@%d %s" , returnSymbol , com) // push return-addr
+	code.write(fmt.Sprintf("@%d %s", returnSymbol, comment)) // push return-addr
 	code.write("D=A")
 	code.write("@SP")
 	code.write("A=M")
@@ -392,7 +392,7 @@ func (code *CodeWriter) writeCall(funcName string, numArgs int) {
 	code.write("@SP")
 	code.write("M=M+1")
 
-	code.write("@" + to_string(numArgs)) // ARG = SP-n-5
+	code.write(fmt.Sprintf("@%d", numArgs)) // ARG = SP-n-5
 	code.write("D=A")
 	code.write("@5")
 	code.write("D=D+A")
@@ -413,72 +413,70 @@ func (code *CodeWriter) writeCall(funcName string, numArgs int) {
 
 }
 
+func (code *CodeWriter) writeReturn() {
 
-func (code *CodeWriter) writeReturn () {
-	
-	
-	/*  
-        FRAME = LCL         // FRAME is a temporary var
-        RET = *(FRAME-5)    // put the return-address in a temporary var
-        *ARG = pop()        // reposition the return value for the caller
-        SP = ARG + 1        // restore SP of the caller
-        THAT = *(FRAME - 1) // restore THAT of the caller
-        THIS = *(FRAME - 2) // restore THIS of the caller
-        ARG = *(FRAME - 3)  // restore ARG of the caller
-        LCL = *(FRAME - 4)  // restore LCL of the caller
-        goto RET            // goto return-address (in the caller's code)
-    */
+	/*
+	   FRAME = LCL         // FRAME is a temporary var
+	   RET = *(FRAME-5)    // put the return-address in a temporary var
+	   *ARG = pop()        // reposition the return value for the caller
+	   SP = ARG + 1        // restore SP of the caller
+	   THAT = *(FRAME - 1) // restore THAT of the caller
+	   THIS = *(FRAME - 2) // restore THIS of the caller
+	   ARG = *(FRAME - 3)  // restore ARG of the caller
+	   LCL = *(FRAME - 4)  // restore LCL of the caller
+	   goto RET            // goto return-address (in the caller's code)
+	*/
 
-    code.write("@LCL"); // FRAME = LCL
-    code.write("D=M");
+	code.write("@LCL") // FRAME = LCL
+	code.write("D=M")
 
-    code.write("@R13"); // R13 -> FRAME
-    code.write("M=D");
+	code.write("@R13") // R13 -> FRAME
+	code.write("M=D")
 
-    code.write("@5"); // RET = *(FRAME-5)
-    code.write("A=D-A");
-    code.write("D=M");
-    code.write("@R14"); // R14 -> RET
-    code.write("M=D");
+	code.write("@5") // RET = *(FRAME-5)
+	code.write("A=D-A")
+	code.write("D=M")
+	code.write("@R14") // R14 -> RET
+	code.write("M=D")
 
-    code.write("@SP"); // *ARG = pop()
-    code.write("AM=M-1");
-    code.write("D=M");
-    code.write("@ARG");
-    code.write("A=M");
-    code.write("M=D");
+	code.write("@SP") // *ARG = pop()
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@ARG")
+	code.write("A=M")
+	code.write("M=D")
 
-    code.write("D=A"); // SP = ARG+1
-    code.write("@SP");
-    code.write("M=D+1");
+	code.write("D=A") // SP = ARG+1
+	code.write("@SP")
+	code.write("M=D+1")
 
-    code.write("@R13"); // THAT = *(FRAME-1)
-    code.write("AM=M-1");
-    code.write("D=M");
-    code.write("@THAT");
-    code.write("M=D");
+	code.write("@R13") // THAT = *(FRAME-1)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@THAT")
+	code.write("M=D")
 
-    code.write("@R13"); // THIS = *(FRAME-2)
-    code.write("AM=M-1");
-    code.write("D=M");
-    code.write("@THIS");
-    code.write("M=D");
+	code.write("@R13") // THIS = *(FRAME-2)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@THIS")
+	code.write("M=D")
 
-    code.write("@R13"); // ARG = *(FRAME-3)
-    code.write("AM=M-1");
-    code.write("D=M");
-    code.write("@ARG");
-    code.write("M=D");
+	code.write("@R13") // ARG = *(FRAME-3)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@ARG")
+	code.write("M=D")
 
-    code.write("@R13"); // LCL = *(FRAME-4)
-    code.write("AM=M-1");
-    code.write("D=M");
-    code.write("@LCL");
-    code.write("M=D");
+	code.write("@R13") // LCL = *(FRAME-4)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@LCL")
+	code.write("M=D")
 
-    code.write("@R14"); // goto RET
-    code.write("A=M");
-    code.write("0;JMP");  
+	code.write("@R14") // goto RET
+	code.write("A=M")
+	code.write("0;JMP")
 
 }
 

@@ -34,7 +34,6 @@ func translate(path string, code *codewriter.CodeWriter) {
 	code.SetFileName(path)
 
 	for p.HasMoreCommands() {
-
 		switch cmd := p.NextCommand().(type) {
 		case command.Arithmetic:
 			code.WriteArithmetic(cmd)
