@@ -32,6 +32,7 @@ func translate(path string, code *codewriter.CodeWriter) {
 
 	p := parser.New(path)
 	code.SetFileName(path)
+	
 
 	for p.HasMoreCommands() {
 		switch cmd := p.NextCommand().(type) {

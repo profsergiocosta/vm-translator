@@ -21,7 +21,7 @@ func New(fname string) *Parser {
 		// tratar o erro aqui
 		panic("Error")
 	}
-	reTokens, _ := regexp.Compile("[a-zA-Z][_a-zA-Z|/-]*|0|[1-9][0-9]*")
+	reTokens, _ := regexp.Compile("[a-zA-Z][_a-zA-Z|/-|/.]*|0|[1-9][0-9]*")
 
 	code, _ := ioutil.ReadFile(fname)
 	codeProc := reComments.ReplaceAllString(string(code), "")
