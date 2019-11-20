@@ -47,6 +47,12 @@ func translate(path string, code *codewriter.CodeWriter) {
 			code.WriteGoto(cmd.Label)
 		case command.IFGoto:
 			code.WriteIf(cmd.Label)
+		case command.Return:
+			code.WriteReturn()
+		case command.CallFunction:
+			code.WriteFunction(cmd.FuncName, cmd.Args)
+		case command.Function:
+			code.WriteFunction(cmd.Name, cmd.Vars)
 		}
 	}
 	code.CloseFile()

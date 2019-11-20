@@ -44,6 +44,25 @@ type IFGoto struct {
 
 func (_ IFGoto) isCommand() {}
 
+type Function struct {
+	Name string
+	Vars int
+}
+
+func (_ Function) isCommand() {}
+
+type CallFunction struct {
+	FuncName string
+	Args     int
+}
+
+func (_ CallFunction) isCommand() {}
+
+type Return struct {
+}
+
+func (_ Return) isCommand() {}
+
 type UndefinedCommand struct {
 	Label string
 }

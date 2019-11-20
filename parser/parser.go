@@ -44,6 +44,8 @@ func (p *Parser) NextCommand() command.Command {
 	p.Advance()
 
 	switch p.currToken {
+	case "return":
+		return command.Return{}
 
 	case "add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not":
 		return command.Arithmetic{Name: p.currToken}
@@ -71,6 +73,10 @@ func (p *Parser) NextCommand() command.Command {
 			return command.Push{Segment: arg1, Index: arg2}
 		case "pop":
 			return command.Pop{Segment: arg1, Index: arg2}
+		case "function":
+			return command.Function{Name: arg1, Vars: arg2}
+		case "call":
+			return command.CallFunction{FuncName: arg1, Args: arg2}
 		}
 
 	}

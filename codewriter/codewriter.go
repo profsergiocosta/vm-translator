@@ -67,7 +67,7 @@ func (code *CodeWriter) writeInit() {
 	code.write("D=A")
 	code.write("@SP")
 	code.write("M=D")
-	code.writeCall("Sys.init", 0)
+	code.WriteCall("Sys.init", 0)
 }
 
 func (code *CodeWriter) SetFileName(pathName string) {
@@ -334,7 +334,7 @@ func (code *CodeWriter) WriteFunction(funcName string, nLocals int) {
 	code.write("(" + loopEndLabel + ")")
 }
 
-func (code *CodeWriter) writeCall(funcName string, numArgs int) {
+func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 
 	/*
 	   push return-address     // (using the label declared below)
@@ -413,7 +413,7 @@ func (code *CodeWriter) writeCall(funcName string, numArgs int) {
 
 }
 
-func (code *CodeWriter) writeReturn() {
+func (code *CodeWriter) WriteReturn() {
 
 	/*
 	   FRAME = LCL         // FRAME is a temporary var
