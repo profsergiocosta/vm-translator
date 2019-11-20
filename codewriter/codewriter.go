@@ -70,6 +70,13 @@ func (code *CodeWriter) WriteInit() {
 	code.WriteCall("Sys.init", 0)
 }
 
+func (code *CodeWriter) WriteEnd() {
+	code.write("(LOOP_INFINITO)")
+	code.write("@LOOP_INFINITO")
+	code.write("0;JMP")
+
+}
+
 func (code *CodeWriter) SetFileName(pathName string) {
 	code.moduleName = filenameWithoutExtension(path.Base(pathName))
 }
@@ -332,6 +339,9 @@ func (code *CodeWriter) WriteFunction(funcName string, nLocals int) {
 	code.write("@" + loopLabel)
 	code.write("0;JMP")
 	code.write("(" + loopEndLabel + ")")
+
+
+
 }
 
 func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
@@ -350,8 +360,63 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 
 	comment := fmt.Sprintf("// call %s %d", funcName, numArgs)
 
-	returnSymbol := fmt.Sprintf("%s__RETURN_%d", funcName, code.callCount)
+	returnSymbol := fmt.Sprintf("%s_RETURN_%d", funcName, code.callCount)
 	code.callCount++
+
+
+	code.write("@" + returnSymbol + comment + "")
+	code.write("D=A")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+	code.write("@LCL")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+	code.write("@ARG")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+	code.write("@THIS")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+	code.write("@THAT")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+//	code.write("@" + str(n) + "")
+	code.write(fmt.Sprintf("@%d", numArgs)) 
+	code.write("D=A")
+	code.write("@5")
+	code.write("D=D+A")
+	code.write("@SP")
+	code.write("D=M-D")
+	code.write("@ARG")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("D=M")
+	code.write("@LCL")
+	code.write("M=D")
+	code.write("@" + funcName + "")
+	code.write("0;JMP")
+	code.write("(" + returnSymbol + ")")
+
+	/*
 	code.write(fmt.Sprintf("@%s %s", returnSymbol, comment)) // push return-addr
 	code.write("D=A")
 	code.write("@SP")
@@ -410,7 +475,7 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("0;JMP")
 
 	code.write("(" + returnSymbol + ")") // (return-address)
-
+*/
 }
 
 func (code *CodeWriter) WriteReturn() {
@@ -427,6 +492,7 @@ func (code *CodeWriter) WriteReturn() {
 	   goto RET            // goto return-address (in the caller's code)
 	*/
 
+	/*
 	code.write("@LCL") // FRAME = LCL
 	code.write("D=M")
 
@@ -477,6 +543,50 @@ func (code *CodeWriter) WriteReturn() {
 	code.write("@R14") // goto RET
 	code.write("A=M")
 	code.write("0;JMP")
+
+	*/
+
+    code.write("@LCL")
+        code.write("D=M")
+        code.write("@R13")
+        code.write("M=D")
+        code.write("@5")
+        code.write("A=D-A")
+        code.write("D=M")
+        code.write("@R14")
+        code.write("M=D")
+        code.write("@SP")
+        code.write("AM=M-1")
+        code.write("D=M")
+        code.write("@ARG")
+        code.write("A=M")
+        code.write("M=D")
+        code.write("D=A")
+        code.write("@SP")
+        code.write("M=D+1")
+        code.write("@R13")
+        code.write("AM=M-1")
+        code.write("D=M")
+        code.write("@THAT")
+        code.write("M=D")
+        code.write("@R13")
+        code.write("AM=M-1")
+        code.write("D=M")
+        code.write("@THIS")
+        code.write("M=D")
+        code.write("@R13")
+        code.write("AM=M-1")
+        code.write("D=M")
+        code.write("@ARG")
+        code.write("M=D")
+        code.write("@R13")
+        code.write("AM=M-1")
+        code.write("D=M")
+        code.write("@LCL")
+        code.write("M=D")
+        code.write("@R14")
+        code.write("A=M")
+        code.write("0;JMP")
 
 }
 
