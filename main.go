@@ -32,7 +32,7 @@ func translate(path string, code *codewriter.CodeWriter) {
 
 	p := parser.New(path)
 	code.SetFileName(path)
-	
+	code.WriteInit()
 
 	for p.HasMoreCommands() {
 		switch cmd := p.NextCommand().(type) {
@@ -71,13 +71,14 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			code := codewriter.New(filenameWithoutExtension(path) + "/" + filepath.Base(path) + ".asm")
 			for _, f := range files {
 
 				if filepath.Ext(f.Name()) == ".vm" {
 					abs, _ := filepath.Abs(path + "/" + f.Name())
 					fmt.Printf("Translating: %s \n", abs)
 					fmt.Println(filenameWithoutExtension(path) + ".asm")
-					code := codewriter.New(filenameWithoutExtension(path) + ".asm")
 					translate(abs, code)
 					code.CloseFile()
 

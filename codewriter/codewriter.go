@@ -62,7 +62,7 @@ func (code *CodeWriter) segmentPointer(segment string, index int) string {
 
 }
 
-func (code *CodeWriter) writeInit() {
+func (code *CodeWriter) WriteInit() {
 	code.write("@256")
 	code.write("D=A")
 	code.write("@SP")
@@ -352,7 +352,7 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 
 	returnSymbol := fmt.Sprintf("%s__RETURN_%d", funcName, code.callCount)
 	code.callCount++
-	code.write(fmt.Sprintf("@%d %s", returnSymbol, comment)) // push return-addr
+	code.write(fmt.Sprintf("@%s %s", returnSymbol, comment)) // push return-addr
 	code.write("D=A")
 	code.write("@SP")
 	code.write("A=M")
