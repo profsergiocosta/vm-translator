@@ -118,14 +118,14 @@ func (code *CodeWriter) WritePush(seg string, index int) {
 func (code *CodeWriter) WritePop(seg string, index int) {
 	switch seg {
 	case "static", "temp", "pointer":
-		code.write(fmt.Sprintf("@SP // pop %s %d ", seg, index))
+		code.write(fmt.Sprintf("@SP // pop %s %d", seg, index))
 		code.write("M=M-1")
 		code.write("A=M")
 		code.write("D=M")
 		code.write(fmt.Sprintf("@%s", code.segmentPointer(seg, index)))
 		code.write("M=D")
 	case "local", "argument", "this", "that":
-		code.write(fmt.Sprintf("@%s // pop %s %d ", code.segmentPointer(seg, index), seg, index))
+		code.write(fmt.Sprintf("@%s // pop %s %d", code.segmentPointer(seg, index), seg, index))
 		code.write("D=M")
 		code.write(fmt.Sprintf("@%d", index))
 		code.write("D=D+A")
@@ -168,51 +168,47 @@ func (code *CodeWriter) WriteArithmetic(cmd command.Arithmetic) {
 	}
 }
 
-func (code *CodeWriter) writeArithmeticAdd() {
-	code.write("@SP // add")
-	code.write("M=M-1")
-	code.write("A=M")
+func (code *CodeWriter) writeBinaryArithmetic() {
+	code.write("@SP")
+	code.write("AM=M-1")
 	code.write("D=M")
 	code.write("A=A-1")
+}
+
+func (code *CodeWriter) writeArithmeticAdd() {
+	code.writeBinaryArithmetic()
 	code.write("M=D+M")
 }
 
 func (code *CodeWriter) writeArithmeticSub() {
-	code.write("@SP // sub")
-	code.write("M=M-1")
-	code.write("A=M")
-	code.write("D=M")
-	code.write("A=A-1")
+	code.writeBinaryArithmetic()
 	code.write("M=M-D")
 }
 
-func (code *CodeWriter) writeArithmeticNeg() {
-	code.write("@SP // neg")
+func (code *CodeWriter) writeArithmeticAnd() {
+	code.writeBinaryArithmetic()
+	code.write("M=D&M")
+}
+
+func (code *CodeWriter) writeArithmeticOr() {
+	code.writeBinaryArithmetic()
+	code.write("M=D|M")
+}
+
+func (code *CodeWriter) writeUnaryArithmetic() {
+	code.write("@SP")
 	code.write("A=M")
 	code.write("A=A-1")
 	code.write("M=-M")
 }
 
-func (code *CodeWriter) writeArithmeticAnd() {
-	code.write("@SP // and")
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("A=A-1")
-	code.write("M=D&M")
-}
-
-func (code *CodeWriter) writeArithmeticOr() {
-	code.write("@SP // or")
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("A=A-1")
-	code.write("M=D|M")
+func (code *CodeWriter) writeArithmeticNeg() {
+	code.writeUnaryArithmetic()
+	code.write("M=-M")
 }
 
 func (code *CodeWriter) writeArithmeticNot() {
-	code.write("@SP // not")
-	code.write("A=M")
-	code.write("A=A-1")
+	code.writeUnaryArithmetic()
 	code.write("M=!M")
 }
 
@@ -278,10 +274,10 @@ func (code *CodeWriter) writeArithmeticLt() {
 	code.write("@SP")
 	code.write("AM=M-1")
 	code.write("D=M-D")
-	code.write("@" + labelTrue)
+	code.write("@" + labelTrue + "")
 	code.write("D;JLT")
 	code.write("D=0")
-	code.write("@" + labelFalse)
+	code.write("@" + labelFalse + "")
 	code.write("0;JMP")
 	code.write("(" + labelTrue + ")")
 	code.write("D=-1")
@@ -340,8 +336,16 @@ func (code *CodeWriter) WriteFunction(funcName string, nLocals int) {
 	code.write("0;JMP")
 	code.write("(" + loopEndLabel + ")")
 
+}
 
-
+func (code *CodeWriter) writeFramePush(value string) {
+	code.write("@" + value)
+	code.write("D=M")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
 }
 
 func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
@@ -360,64 +364,10 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 
 	comment := fmt.Sprintf("// call %s %d", funcName, numArgs)
 
-	returnSymbol := fmt.Sprintf("%s_RETURN_%d", funcName, code.callCount)
+	returnAddr := fmt.Sprintf("%s_RETURN_%d", funcName, code.callCount)
 	code.callCount++
 
-
-	code.write("@" + returnSymbol + comment + "")
-	code.write("D=A")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-	code.write("@LCL")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-	code.write("@ARG")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-	code.write("@THIS")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-	code.write("@THAT")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-//	code.write("@" + str(n) + "")
-	code.write(fmt.Sprintf("@%d", numArgs)) 
-	code.write("D=A")
-	code.write("@5")
-	code.write("D=D+A")
-	code.write("@SP")
-	code.write("D=M-D")
-	code.write("@ARG")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("D=M")
-	code.write("@LCL")
-	code.write("M=D")
-	code.write("@" + funcName + "")
-	code.write("0;JMP")
-	code.write("(" + returnSymbol + ")")
-
-	/*
-	code.write(fmt.Sprintf("@%s %s", returnSymbol, comment)) // push return-addr
+	code.write(fmt.Sprintf("@%s %s", returnAddr, comment)) // push return-addr
 	code.write("D=A")
 	code.write("@SP")
 	code.write("A=M")
@@ -425,37 +375,10 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@SP")
 	code.write("M=M+1")
 
-	code.write("@LCL") // push LCL
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-
-	code.write("@ARG") // push ARG
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-
-	code.write("@THIS") // push THIS
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-
-	code.write("@THAT") // push THAT
-	code.write("D=M")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
+	code.writeFramePush("LCL")
+	code.writeFramePush("ARG")
+	code.writeFramePush("THIS")
+	code.writeFramePush("THAT")
 
 	code.write(fmt.Sprintf("@%d", numArgs)) // ARG = SP-n-5
 	code.write("D=A")
@@ -471,11 +394,10 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@LCL")
 	code.write("M=D")
 
-	code.write("@" + funcName) // goto f
-	code.write("0;JMP")
+	code.WriteGoto(funcName)
 
-	code.write("(" + returnSymbol + ")") // (return-address)
-*/
+	code.write("(" + returnAddr + ")") // (return-address)
+
 }
 
 func (code *CodeWriter) WriteReturn() {
@@ -492,7 +414,6 @@ func (code *CodeWriter) WriteReturn() {
 	   goto RET            // goto return-address (in the caller's code)
 	*/
 
-	/*
 	code.write("@LCL") // FRAME = LCL
 	code.write("D=M")
 
@@ -543,50 +464,6 @@ func (code *CodeWriter) WriteReturn() {
 	code.write("@R14") // goto RET
 	code.write("A=M")
 	code.write("0;JMP")
-
-	*/
-
-    code.write("@LCL")
-        code.write("D=M")
-        code.write("@R13")
-        code.write("M=D")
-        code.write("@5")
-        code.write("A=D-A")
-        code.write("D=M")
-        code.write("@R14")
-        code.write("M=D")
-        code.write("@SP")
-        code.write("AM=M-1")
-        code.write("D=M")
-        code.write("@ARG")
-        code.write("A=M")
-        code.write("M=D")
-        code.write("D=A")
-        code.write("@SP")
-        code.write("M=D+1")
-        code.write("@R13")
-        code.write("AM=M-1")
-        code.write("D=M")
-        code.write("@THAT")
-        code.write("M=D")
-        code.write("@R13")
-        code.write("AM=M-1")
-        code.write("D=M")
-        code.write("@THIS")
-        code.write("M=D")
-        code.write("@R13")
-        code.write("AM=M-1")
-        code.write("D=M")
-        code.write("@ARG")
-        code.write("M=D")
-        code.write("@R13")
-        code.write("AM=M-1")
-        code.write("D=M")
-        code.write("@LCL")
-        code.write("M=D")
-        code.write("@R14")
-        code.write("A=M")
-        code.write("0;JMP")
 
 }
 
