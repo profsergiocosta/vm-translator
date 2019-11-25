@@ -22,6 +22,7 @@ func filenameWithoutExtension(fn string) string {
 type CodeWriter struct {
 	out        *os.File
 	moduleName string
+	funcName   string
 	labelCount int
 	callCount  int
 }
@@ -33,6 +34,8 @@ func New(pathName string) *CodeWriter {
 	code := &CodeWriter{out: f}
 	code.labelCount = 0
 	code.callCount = 0
+
+	code.funcName = ""
 
 	return code
 }
@@ -292,11 +295,13 @@ func (code *CodeWriter) writeArithmeticLt() {
 }
 
 func (code *CodeWriter) WriteLabel(label string) {
-	code.write("(" + label + ")")
+	labelConcat := label //fmt.Sprintf("%s_%s", code.funcName, label)
+	code.write("(" + labelConcat + ")")
 }
 
 func (code *CodeWriter) WriteGoto(label string) {
-	code.write("@" + label)
+	labelConcat := label //fmt.Sprintf("%s_%s", code.funcName, label)
+	code.write("@" + labelConcat)
 	code.write("0;JMP")
 }
 
@@ -314,6 +319,8 @@ func (code *CodeWriter) WriteFunction(funcName string, nLocals int) {
 
 	loopLabel := funcName + "_INIT_LOCALS_LOOP"
 	loopEndLabel := funcName + "_INIT_LOCALS_END"
+
+	code.funcName = funcName
 
 	code.write("(" + funcName + ")" + "// initializa local variables")
 	code.write(fmt.Sprintf("@%d", nLocals))
