@@ -202,7 +202,6 @@ func (code *CodeWriter) writeUnaryArithmetic() {
 	code.write("@SP")
 	code.write("A=M")
 	code.write("A=A-1")
-	code.write("M=-M")
 }
 
 func (code *CodeWriter) writeArithmeticNeg() {
