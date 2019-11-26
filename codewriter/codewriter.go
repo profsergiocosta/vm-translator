@@ -295,13 +295,11 @@ func (code *CodeWriter) writeArithmeticLt() {
 }
 
 func (code *CodeWriter) WriteLabel(label string) {
-	labelConcat := label //fmt.Sprintf("%s_%s", code.funcName, label)
-	code.write("(" + labelConcat + ")")
+	code.write("(" + label + ")")
 }
 
 func (code *CodeWriter) WriteGoto(label string) {
-	labelConcat := label //fmt.Sprintf("%s_%s", code.funcName, label)
-	code.write("@" + labelConcat)
+	code.write("@" + label)
 	code.write("0;JMP")
 }
 
