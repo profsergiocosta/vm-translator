@@ -27,6 +27,7 @@ func New(fname string) *Parser {
 	codeProc := reComments.ReplaceAllString(string(code), "")
 
 	p.tokens = reTokens.FindAllString(codeProc, -1)
+
 	p.position = 0
 	return p
 }

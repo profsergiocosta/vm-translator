@@ -73,13 +73,6 @@ func (code *CodeWriter) WriteInit() {
 	code.WriteCall("Sys.init", 0)
 }
 
-func (code *CodeWriter) WriteEnd() {
-	code.write("(LOOP_INFINITO)")
-	code.write("@LOOP_INFINITO")
-	code.write("0;JMP")
-
-}
-
 func (code *CodeWriter) SetFileName(pathName string) {
 	code.moduleName = filenameWithoutExtension(path.Base(pathName))
 }

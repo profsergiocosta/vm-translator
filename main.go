@@ -91,7 +91,6 @@ func main() {
 			code := codewriter.New(filenameWithoutExtension(path) + ".asm")
 			code.WriteInit()
 			translate(path, code)
-			code.WriteEnd()
 			code.CloseFile()
 		}
 
