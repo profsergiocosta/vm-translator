@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/profsergiocosta/vm-translator/codewriter"
+	"github.com/profsergiocosta/vm-translator/codewriterplus"
 	"github.com/profsergiocosta/vm-translator/command"
 	"github.com/profsergiocosta/vm-translator/parser"
 )
@@ -28,7 +28,7 @@ func filenameWithoutExtension(fn string) string {
 	return strings.TrimSuffix(fn, path.Ext(fn))
 }
 
-func translate(path string, code *codewriter.CodeWriter) {
+func translate(path string, code *codewriterplus.CodeWriter) {
 
 	p := parser.New(path)
 	code.SetFileName(path)
@@ -69,7 +69,7 @@ func main() {
 				log.Fatal(err)
 			}
 
-			code := codewriter.New(filenameWithoutExtension(path) + "/" + filepath.Base(path) + ".asm")
+			code := codewriterplus.New(filenameWithoutExtension(path) + "/" + filepath.Base(path) + ".asm")
 			code.WriteInit()
 
 			for _, f := range files {
@@ -88,7 +88,7 @@ func main() {
 		} else {
 			abs, _ := filepath.Abs(path)
 			fmt.Printf("Translating: %s \n", abs)
-			code := codewriter.New(filenameWithoutExtension(path) + ".asm")
+			code := codewriterplus.New(filenameWithoutExtension(path) + ".asm")
 			code.WriteInit()
 			translate(path, code)
 			code.CloseFile()
