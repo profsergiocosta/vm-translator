@@ -148,6 +148,7 @@ func (code *CodeWriter) WriteSubRotineReturn() {
 	code.write("0;JMP")
 
 	code.write("@R13")
+	code.write("A=M")
 	code.write("0;JMP")
 }
 
@@ -178,6 +179,7 @@ func (code *CodeWriter) writeSubArithmeticEq() {
 	code.labelCount++
 
 	code.write("@R13")
+	code.write("A=M")
 	code.write("0;JMP")
 }
 
@@ -213,6 +215,7 @@ func (code *CodeWriter) writeSubArithmeticGt() {
 	code.labelCount++
 
 	code.write("@R13")
+	code.write("A=M")
 	code.write("0;JMP")
 }
 
@@ -248,6 +251,7 @@ func (code *CodeWriter) writeSubArithmeticLt() {
 	code.labelCount++
 
 	code.write("@R13")
+	code.write("A=M")
 	code.write("0;JMP")
 }
 

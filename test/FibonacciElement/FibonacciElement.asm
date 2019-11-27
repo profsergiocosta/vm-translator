@@ -97,6 +97,7 @@ M=D
 A=M
 0;JMP
 @R13
+A=M
 0;JMP
 ($LT$)
 @R13
@@ -121,6 +122,7 @@ M=D
 @SP
 M=M+1
 @R13
+A=M
 0;JMP
 ($GT$)
 @R13
@@ -145,6 +147,7 @@ M=D
 @SP
 M=M+1
 @R13
+A=M
 0;JMP
 ($EQ$)
 @R13
@@ -166,6 +169,7 @@ M=D
 @SP
 M=M+1
 @R13
+A=M
 0;JMP
 (Main.fibonacci)// initializa local variables
 @0
