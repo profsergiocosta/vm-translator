@@ -1,0 +1,13 @@
+class Main {
+
+
+function void main () {
+    var Array v;
+    let v = Array.new(100);
+    let v[1] = 100;
+    let v[0] = v[1];
+    do Output.printInt(v[1]);
+    return ;
+}
+
+}

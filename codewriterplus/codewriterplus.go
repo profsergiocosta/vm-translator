@@ -77,11 +77,29 @@ func (code *CodeWriter) WriteInit() {
 	code.writeSubArithmeticLt()
 	code.writeSubArithmeticGt()
 	code.writeSubArithmeticEq()
+	code.WriteSubFrame()
+}
+
+func (code *CodeWriter) WriteSubFrame() {
+
+	code.write("($FRAME$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	code.writeFramePush("LCL")
+	code.writeFramePush("ARG")
+	code.writeFramePush("THIS")
+	code.writeFramePush("THAT")
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
+
 }
 
 func (code *CodeWriter) WriteSubRotineReturn() {
 	code.write("($RETURN$)")
-	code.write("@R13")
+	code.write("@R15")
 	code.write("M=D")
 
 	/*
@@ -147,7 +165,7 @@ func (code *CodeWriter) WriteSubRotineReturn() {
 	code.write("A=M")
 	code.write("0;JMP")
 
-	code.write("@R13")
+	code.write("@R15")
 	code.write("A=M")
 	code.write("0;JMP")
 }
@@ -155,7 +173,7 @@ func (code *CodeWriter) WriteSubRotineReturn() {
 func (code *CodeWriter) writeSubArithmeticEq() {
 
 	code.write("($EQ$)")
-	code.write("@R13")
+	code.write("@R15")
 	code.write("M=D")
 
 	label := fmt.Sprintf("JEQ_%s_%d", code.moduleName, code.labelCount)
@@ -178,7 +196,7 @@ func (code *CodeWriter) writeSubArithmeticEq() {
 
 	code.labelCount++
 
-	code.write("@R13")
+	code.write("@R15")
 	code.write("A=M")
 	code.write("0;JMP")
 }
@@ -186,7 +204,7 @@ func (code *CodeWriter) writeSubArithmeticEq() {
 func (code *CodeWriter) writeSubArithmeticGt() {
 
 	code.write("($GT$)")
-	code.write("@R13")
+	code.write("@R15")
 	code.write("M=D")
 
 	labelTrue := fmt.Sprintf("JGT_TRUE_%s_%d", code.moduleName, code.labelCount)
@@ -214,7 +232,7 @@ func (code *CodeWriter) writeSubArithmeticGt() {
 
 	code.labelCount++
 
-	code.write("@R13")
+	code.write("@R15")
 	code.write("A=M")
 	code.write("0;JMP")
 }
@@ -222,7 +240,7 @@ func (code *CodeWriter) writeSubArithmeticGt() {
 func (code *CodeWriter) writeSubArithmeticLt() {
 
 	code.write("($LT$)")
-	code.write("@R13")
+	code.write("@R15")
 	code.write("M=D")
 
 	labelTrue := fmt.Sprintf("JLT_TRUE_%s_%d", code.moduleName, code.labelCount)
@@ -250,7 +268,7 @@ func (code *CodeWriter) writeSubArithmeticLt() {
 
 	code.labelCount++
 
-	code.write("@R13")
+	code.write("@R15")
 	code.write("A=M")
 	code.write("0;JMP")
 }
@@ -507,10 +525,20 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@SP")
 	code.write("M=M+1")
 
-	code.writeFramePush("LCL")
-	code.writeFramePush("ARG")
-	code.writeFramePush("THIS")
-	code.writeFramePush("THAT")
+	/*
+		code.writeFramePush("LCL")
+		code.writeFramePush("ARG")
+		code.writeFramePush("THIS")
+		code.writeFramePush("THAT")
+	*/
+
+	returnFrame := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnFrame))
+	code.write("D=A")
+	code.write("@$FRAME$")
+	code.write("0;JMP")
+	code.write(fmt.Sprintf("(%s)", returnFrame))
+	code.returnSubCount++
 
 	code.write(fmt.Sprintf("@%d", numArgs)) // ARG = SP-n-5
 	code.write("D=A")
