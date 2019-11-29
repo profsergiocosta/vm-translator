@@ -440,20 +440,27 @@ func (code *CodeWriter) writeArithmeticLt() {
 }
 
 func (code *CodeWriter) WriteLabel(label string) {
-	code.write("(" + label + ")")
+	
+	newLabel :=  fmt.Sprintf ("%s$%s", code.funcName, label)
+	
+	code.write("(" + newLabel + ")")
 }
 
 func (code *CodeWriter) WriteGoto(label string) {
-	code.write("@" + label)
+	newLabel :=  fmt.Sprintf ("%s$%s", code.funcName, label)
+	code.write("@" + newLabel)
 	code.write("0;JMP")
 }
 
 func (code *CodeWriter) WriteIf(label string) {
+
+	newLabel :=  fmt.Sprintf ("%s$%s", code.funcName, label)
+
 	code.write("@SP")
 	code.write("AM=M-1")
 	code.write("D=M")
 	code.write("M=0")
-	code.write("@" + label)
+	code.write("@" + newLabel)
 	code.write("D;JNE")
 
 }
@@ -554,7 +561,9 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@LCL")
 	code.write("M=D")
 
-	code.WriteGoto(funcName)
+	//code.WriteGoto(funcName)
+	code.write("@" + funcName)
+	code.write("0;JMP")
 
 	code.write("(" + returnAddr + ")") // (return-address)
 

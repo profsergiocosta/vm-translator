@@ -1,9 +1,0 @@
-class Point {
-
-    field int x_, y_;
-    constructor Point new (int x, int y) {
-        let x_ = x;
-        let y_ = y;
-        return this;
-    }
-}
