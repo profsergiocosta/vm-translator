@@ -1,7 +1,31 @@
 class Main {
 
+    static Array v;
+    static Point p;
+    static String s;
+    
     function void main () {
-        do Output.printString("ola");
+        var Array v2;
+
+      //let s = String.new (10);
+       let p = Point.new (99,100);
+       let v = Array.new (30);
+       let v2 = Memory.alloc (10);
+
+       //let v= 0;
+       //let v[9] = p;
+       //let v[8] = v2;
+       //let v2[2] = 49;
+       do Output.printChar(97);
+       //do Output.printInt(97);
+       let s = "ola";
+       do Memory.poke (250,s);
+       do Memory.poke (251,v);
+       do Memory.poke (252,p);
+       do Memory.poke (253,v2);
+       do Output.printString(s);
+       do Output.printInt(10);
+      
         return;
     }
 }

@@ -1,28 +1,27 @@
 function Memory.init 0
+push constant 2048
+pop static 4
+push constant 16384
+pop static 3
 push constant 0
 pop static 0
-push constant 2048
+push static 4
 pop static 1
-push constant 16384
-pop static 2
 push constant 0
-pop static 3
-push constant 1
-pop static 4
-push constant 1
-neg
 pop static 5
-push static 3
+push constant 1
+pop static 6
+push static 5
 push static 1
 add
-push constant 16384
-push constant 2048
+push static 3
+push static 4
 sub
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 4
+push static 6
 push static 1
 add
 push constant 0
@@ -30,6 +29,9 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
+push constant 1
+neg
+pop static 7
 push constant 0
 return
 function Memory.peek 0
@@ -50,136 +52,107 @@ push temp 0
 pop that 0
 push constant 0
 return
-function Memory.alloc 2
-push argument 0
-call Memory.best_fit 1
-pop local 0
-push local 0
-push static 2
-eq
-if-goto Memory_IF_TRUE0
-goto Memory_IF_FALSE0
-label Memory_IF_TRUE0
+function Memory.bestFit 4
 push constant 0
 pop local 1
-goto Memory_IF_END0
-label Memory_IF_FALSE0
-push local 0
-push constant 0
-eq
-if-goto Memory_IF_TRUE1
-goto Memory_IF_FALSE1
-label Memory_IF_TRUE1
-push static 1
-pop local 1
-push local 1
-push argument 0
-call Memory.do_alloc 2
-pop static 1
-goto Memory_IF_END1
-label Memory_IF_FALSE1
+push static 3
 push static 4
+sub
+pop local 2
+push static 1
+pop local 0
+push static 6
 push local 0
 add
 pop pointer 1
 push that 0
-pop local 1
-push static 4
-push local 0
-add
-push local 1
-push argument 0
-call Memory.do_alloc 2
-pop temp 0
-pop pointer 1
-push temp 0
-pop that 0
-label Memory_IF_END1
-label Memory_IF_END0
-push local 1
-push constant 1
-add
-return
-function Memory.best_fit 5
-push static 2
-pop local 0
-push constant 16384
-push constant 2048
-sub
-pop local 3
-push static 1
-pop local 2
 push constant 0
-pop local 1
+eq
+if-goto Memory_IF_TRUE0
+goto Memory_IF_FALSE0
+label Memory_IF_TRUE0
+push local 0
+return
+label Memory_IF_FALSE0
 label Memory_WHILE_EXP0
-push local 2
+push local 0
 push constant 0
 eq
 not
 not
 if-goto Memory_WHILE_END0
-push static 3
-push local 2
+push static 5
+push local 0
 add
 pop pointer 1
 push that 0
 push constant 1
 sub
-pop local 4
-push local 4
+pop local 3
+push local 3
 push argument 0
 lt
 not
-push local 4
 push local 3
+push local 2
 lt
 and
+if-goto Memory_IF_TRUE1
+goto Memory_IF_FALSE1
+label Memory_IF_TRUE1
+push local 0
+pop local 1
+push local 3
+pop local 2
+label Memory_IF_FALSE1
+push static 6
+push local 0
+add
+pop pointer 1
+push that 0
+pop local 0
+goto Memory_WHILE_EXP0
+label Memory_WHILE_END0
+push local 1
+return
+function Memory.alloc 3
+push argument 0
+call Memory.bestFit 1
+pop local 0
+push local 0
+push constant 1
+add
+pop local 2
+push local 0
+push constant 0
+eq
+not
 if-goto Memory_IF_TRUE2
 goto Memory_IF_FALSE2
 label Memory_IF_TRUE2
-push local 1
-pop local 0
-push local 4
-pop local 3
-label Memory_IF_FALSE2
-push local 2
-pop local 1
-push static 4
-push local 2
-add
-pop pointer 1
-push that 0
-pop local 2
-goto Memory_WHILE_EXP0
-label Memory_WHILE_END0
+push static 5
 push local 0
-return
-function Memory.do_alloc 2
-push static 3
-push argument 0
 add
 pop pointer 1
 push that 0
-push argument 1
-push constant 1
-add
-push constant 2
+push argument 0
+push constant 3
 add
 gt
 if-goto Memory_IF_TRUE3
 goto Memory_IF_FALSE3
 label Memory_IF_TRUE3
+push local 0
 push argument 0
-push argument 1
 add
 push constant 1
 add
-pop local 0
-push static 4
-push local 0
+pop local 1
+push static 6
+push local 1
 add
-push static 4
-push argument 0
+push static 6
+push local 0
 add
 pop pointer 1
 push that 0
@@ -187,94 +160,89 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 3
-push local 0
-add
-push static 3
-push argument 0
-add
-pop pointer 1
-push that 0
-push local 0
-push argument 0
-sub
-sub
-pop temp 0
-pop pointer 1
-push temp 0
-pop that 0
-push argument 0
-push constant 1
-add
-pop argument 0
 push static 5
-push argument 0
+push local 1
 add
-push argument 1
+push static 5
+push local 0
+add
+pop pointer 1
+push that 0
+push argument 0
+sub
+push constant 1
+sub
+pop temp 0
+pop pointer 1
+push temp 0
+pop that 0
+push static 7
+push local 2
+add
+push argument 0
 push constant 1
 add
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
+push local 1
+pop static 1
 goto Memory_IF_END3
 label Memory_IF_FALSE3
-push static 4
-push argument 0
-add
-pop pointer 1
-push that 0
-pop local 0
-push static 3
-push argument 0
+push static 6
+push local 0
 add
 pop pointer 1
 push that 0
 pop local 1
-push argument 0
-push constant 1
+push static 7
+push local 2
 add
-pop argument 0
 push static 5
-push argument 0
+push local 0
 add
-push local 1
+pop pointer 1
+push that 0
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
 label Memory_IF_END3
-push local 0
+push local 1
+pop local 0
+label Memory_IF_FALSE2
+push local 2
 return
 function Memory.deAlloc 3
-push static 5
+push static 7
 push argument 0
 add
 pop pointer 1
 push that 0
-pop local 0
+pop local 2
 push argument 0
 push constant 1
 sub
 pop argument 0
 push argument 0
-call Memory.find_prev_free 1
-pop local 1
-push local 1
+call Memory.findPreFree 1
+pop local 0
+push local 0
 push constant 0
 eq
 if-goto Memory_IF_TRUE4
 goto Memory_IF_FALSE4
 label Memory_IF_TRUE4
-push static 3
+push static 5
 push argument 0
 add
-push local 0
+push local 2
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 4
+push static 6
 push argument 0
 add
 push static 1
@@ -284,13 +252,11 @@ push temp 0
 pop that 0
 push argument 0
 pop static 1
-push argument 0
-pop local 1
 goto Memory_IF_END4
 label Memory_IF_FALSE4
-push local 1
-push static 3
-push local 1
+push local 0
+push static 5
+push local 0
 add
 pop pointer 1
 push that 0
@@ -300,35 +266,37 @@ eq
 if-goto Memory_IF_TRUE5
 goto Memory_IF_FALSE5
 label Memory_IF_TRUE5
-push static 3
-push local 1
+push static 5
+push local 0
 add
-push static 3
-push local 1
+push static 5
+push local 0
 add
 pop pointer 1
 push that 0
-push local 0
+push local 2
 add
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
+push local 0
+pop argument 0
 goto Memory_IF_END5
 label Memory_IF_FALSE5
-push static 3
+push static 5
 push argument 0
 add
-push local 0
+push local 2
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 4
+push static 6
 push argument 0
 add
-push static 4
-push local 1
+push static 6
+push local 0
 add
 pop pointer 1
 push that 0
@@ -336,27 +304,25 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 4
-push local 1
+push static 6
+push local 0
 add
 push argument 0
 pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push argument 0
-pop local 1
 label Memory_IF_END5
 label Memory_IF_END4
-push local 1
-push static 3
-push local 1
+push argument 0
+push static 5
+push argument 0
 add
 pop pointer 1
 push that 0
 add
-push static 4
-push local 1
+push static 6
+push argument 0
 add
 pop pointer 1
 push that 0
@@ -364,22 +330,22 @@ eq
 if-goto Memory_IF_TRUE6
 goto Memory_IF_FALSE6
 label Memory_IF_TRUE6
-push static 4
-push local 1
+push static 6
+push argument 0
 add
 pop pointer 1
 push that 0
-pop local 2
-push static 3
-push local 1
+pop local 1
+push static 5
+push argument 0
 add
-push static 3
-push local 1
+push static 5
+push argument 0
 add
 pop pointer 1
 push that 0
-push static 3
-push local 2
+push static 5
+push local 1
 add
 pop pointer 1
 push that 0
@@ -388,11 +354,11 @@ pop temp 0
 pop pointer 1
 push temp 0
 pop that 0
-push static 4
-push local 1
+push static 6
+push argument 0
 add
-push static 4
-push local 2
+push static 6
+push local 1
 add
 pop pointer 1
 push that 0
@@ -403,7 +369,7 @@ pop that 0
 label Memory_IF_FALSE6
 push constant 0
 return
-function Memory.find_prev_free 1
+function Memory.findPreFree 1
 push static 1
 push argument 0
 gt
@@ -416,7 +382,7 @@ label Memory_IF_FALSE7
 push static 1
 pop local 0
 label Memory_WHILE_EXP1
-push static 4
+push static 6
 push local 0
 add
 pop pointer 1
@@ -424,7 +390,7 @@ push that 0
 push constant 0
 eq
 not
-push static 4
+push static 6
 push local 0
 add
 pop pointer 1
@@ -434,7 +400,7 @@ lt
 and
 not
 if-goto Memory_WHILE_END1
-push static 4
+push static 6
 push local 0
 add
 pop pointer 1
