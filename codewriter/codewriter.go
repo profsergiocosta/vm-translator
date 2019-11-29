@@ -20,11 +20,12 @@ func filenameWithoutExtension(fn string) string {
 }
 
 type CodeWriter struct {
-	out        *os.File
-	moduleName string
-	funcName   string
-	labelCount int
-	callCount  int
+	out            *os.File
+	moduleName     string
+	funcName       string
+	labelCount     int
+	callCount      int
+	returnSubCount int
 }
 
 func New(pathName string) *CodeWriter {
@@ -34,6 +35,7 @@ func New(pathName string) *CodeWriter {
 	code := &CodeWriter{out: f}
 	code.labelCount = 0
 	code.callCount = 0
+	code.returnSubCount = 0
 
 	code.funcName = ""
 
@@ -71,6 +73,204 @@ func (code *CodeWriter) WriteInit() {
 	code.write("@SP")
 	code.write("M=D")
 	code.WriteCall("Sys.init", 0)
+	code.WriteSubRotineReturn()
+	code.writeSubArithmeticLt()
+	code.writeSubArithmeticGt()
+	code.writeSubArithmeticEq()
+	code.WriteSubFrame()
+}
+
+func (code *CodeWriter) WriteSubFrame() {
+
+	code.write("($FRAME$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	code.writeFramePush("LCL")
+	code.writeFramePush("ARG")
+	code.writeFramePush("THIS")
+	code.writeFramePush("THAT")
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
+
+}
+
+func (code *CodeWriter) WriteSubRotineReturn() {
+	code.write("($RETURN$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	/*
+	   FRAME = LCL         // FRAME is a temporary var
+	   RET = *(FRAME-5)    // put the return-address in a temporary var
+	   *ARG = pop()        // reposition the return value for the caller
+	   SP = ARG + 1        // restore SP of the caller
+	   THAT = *(FRAME - 1) // restore THAT of the caller
+	   THIS = *(FRAME - 2) // restore THIS of the caller
+	   ARG = *(FRAME - 3)  // restore ARG of the caller
+	   LCL = *(FRAME - 4)  // restore LCL of the caller
+	   goto RET            // goto return-address (in the caller's code)
+	*/
+
+	code.write("@LCL") // FRAME = LCL
+	code.write("D=M")
+
+	code.write("@R13") // R13 -> FRAME
+	code.write("M=D")
+
+	code.write("@5") // RET = *(FRAME-5)
+	code.write("A=D-A")
+	code.write("D=M")
+	code.write("@R14") // R14 -> RET
+	code.write("M=D")
+
+	code.write("@SP") // *ARG = pop()
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@ARG")
+	code.write("A=M")
+	code.write("M=D")
+
+	code.write("D=A") // SP = ARG+1
+	code.write("@SP")
+	code.write("M=D+1")
+
+	code.write("@R13") // THAT = *(FRAME-1)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@THAT")
+	code.write("M=D")
+
+	code.write("@R13") // THIS = *(FRAME-2)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@THIS")
+	code.write("M=D")
+
+	code.write("@R13") // ARG = *(FRAME-3)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@ARG")
+	code.write("M=D")
+
+	code.write("@R13") // LCL = *(FRAME-4)
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@LCL")
+	code.write("M=D")
+
+	code.write("@R14") // goto RET
+	code.write("A=M")
+	code.write("0;JMP")
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
+}
+
+func (code *CodeWriter) writeSubArithmeticEq() {
+
+	code.write("($EQ$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	label := fmt.Sprintf("JEQ_%s_%d", code.moduleName, code.labelCount)
+	code.write("@SP // eq")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + label)
+	code.write("D;JEQ")
+	code.write("D=1")
+	code.write("(" + label + ")")
+	code.write("D=D-1")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
+}
+
+func (code *CodeWriter) writeSubArithmeticGt() {
+
+	code.write("($GT$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	labelTrue := fmt.Sprintf("JGT_TRUE_%s_%d", code.moduleName, code.labelCount)
+	labelFalse := fmt.Sprintf("JGT_FALSE_%s_%d", code.moduleName, code.labelCount)
+
+	code.write("@SP // gt")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + labelTrue)
+	code.write("D;JGT")
+	code.write("D=0")
+	code.write("@" + labelFalse)
+	code.write("0;JMP")
+	code.write("(" + labelTrue + ")")
+	code.write("D=-1")
+	code.write("(" + labelFalse + ")")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
+}
+
+func (code *CodeWriter) writeSubArithmeticLt() {
+
+	code.write("($LT$)")
+	code.write("@R15")
+	code.write("M=D")
+
+	labelTrue := fmt.Sprintf("JLT_TRUE_%s_%d", code.moduleName, code.labelCount)
+	labelFalse := fmt.Sprintf("JLT_FALSE_%s_%d", code.moduleName, code.labelCount)
+
+	code.write("@SP // lt")
+	code.write("AM=M-1")
+	code.write("D=M")
+	code.write("@SP")
+	code.write("AM=M-1")
+	code.write("D=M-D")
+	code.write("@" + labelTrue + "")
+	code.write("D;JLT")
+	code.write("D=0")
+	code.write("@" + labelFalse + "")
+	code.write("0;JMP")
+	code.write("(" + labelTrue + ")")
+	code.write("D=-1")
+	code.write("(" + labelFalse + ")")
+	code.write("@SP")
+	code.write("A=M")
+	code.write("M=D")
+	code.write("@SP")
+	code.write("M=M+1")
+
+	code.labelCount++
+
+	code.write("@R15")
+	code.write("A=M")
+	code.write("0;JMP")
 }
 
 func (code *CodeWriter) SetFileName(pathName string) {
@@ -208,99 +408,59 @@ func (code *CodeWriter) writeArithmeticNot() {
 }
 
 func (code *CodeWriter) writeArithmeticEq() {
-
-	label := fmt.Sprintf("JEQ_%s_%d", code.moduleName, code.labelCount)
-	code.write("@SP // eq")
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("AM=M-1")
-	code.write("D=M-D")
-	code.write("@" + label)
-	code.write("D;JEQ")
-	code.write("D=1")
-	code.write("(" + label + ")")
-	code.write("D=D-1")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
-
-	code.labelCount++
+	returnAddr := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnAddr))
+	code.write("D=A")
+	code.write("@$EQ$")
+	code.write("0;JMP")
+	code.write(fmt.Sprintf("(%s)", returnAddr))
+	code.returnSubCount++
 }
 
 func (code *CodeWriter) writeArithmeticGt() {
-
-	labelTrue := fmt.Sprintf("JGT_TRUE_%s_%d", code.moduleName, code.labelCount)
-	labelFalse := fmt.Sprintf("JGT_FALSE_%s_%d", code.moduleName, code.labelCount)
-
-	code.write("@SP // gt")
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("AM=M-1")
-	code.write("D=M-D")
-	code.write("@" + labelTrue)
-	code.write("D;JGT")
-	code.write("D=0")
-	code.write("@" + labelFalse)
+	returnAddr := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnAddr))
+	code.write("D=A")
+	code.write("@$GT$")
 	code.write("0;JMP")
-	code.write("(" + labelTrue + ")")
-	code.write("D=-1")
-	code.write("(" + labelFalse + ")")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
+	code.write(fmt.Sprintf("(%s)", returnAddr))
+	code.returnSubCount++
 
-	code.labelCount++
 }
 
 func (code *CodeWriter) writeArithmeticLt() {
-
-	labelTrue := fmt.Sprintf("JLT_TRUE_%s_%d", code.moduleName, code.labelCount)
-	labelFalse := fmt.Sprintf("JLT_FALSE_%s_%d", code.moduleName, code.labelCount)
-
-	code.write("@SP // lt")
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@SP")
-	code.write("AM=M-1")
-	code.write("D=M-D")
-	code.write("@" + labelTrue + "")
-	code.write("D;JLT")
-	code.write("D=0")
-	code.write("@" + labelFalse + "")
+	returnAddr := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnAddr))
+	code.write("D=A")
+	code.write("@$LT$")
 	code.write("0;JMP")
-	code.write("(" + labelTrue + ")")
-	code.write("D=-1")
-	code.write("(" + labelFalse + ")")
-	code.write("@SP")
-	code.write("A=M")
-	code.write("M=D")
-	code.write("@SP")
-	code.write("M=M+1")
+	code.write(fmt.Sprintf("(%s)", returnAddr))
+	code.returnSubCount++
 
-	code.labelCount++
 }
 
 func (code *CodeWriter) WriteLabel(label string) {
-	code.write("(" + label + ")")
+
+	newLabel := fmt.Sprintf("%s$%s", code.funcName, label)
+
+	code.write("(" + newLabel + ")")
 }
 
 func (code *CodeWriter) WriteGoto(label string) {
-	code.write("@" + label)
+	newLabel := fmt.Sprintf("%s$%s", code.funcName, label)
+	code.write("@" + newLabel)
 	code.write("0;JMP")
 }
 
 func (code *CodeWriter) WriteIf(label string) {
+
+	newLabel := fmt.Sprintf("%s$%s", code.funcName, label)
+
 	code.write("@SP")
 	code.write("AM=M-1")
 	code.write("D=M")
 	code.write("M=0")
-	code.write("@" + label)
+	code.write("@" + newLabel)
 	code.write("D;JNE")
 
 }
@@ -372,10 +532,20 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@SP")
 	code.write("M=M+1")
 
-	code.writeFramePush("LCL")
-	code.writeFramePush("ARG")
-	code.writeFramePush("THIS")
-	code.writeFramePush("THAT")
+	/*
+		code.writeFramePush("LCL")
+		code.writeFramePush("ARG")
+		code.writeFramePush("THIS")
+		code.writeFramePush("THAT")
+	*/
+
+	returnFrame := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnFrame))
+	code.write("D=A")
+	code.write("@$FRAME$")
+	code.write("0;JMP")
+	code.write(fmt.Sprintf("(%s)", returnFrame))
+	code.returnSubCount++
 
 	code.write(fmt.Sprintf("@%d", numArgs)) // ARG = SP-n-5
 	code.write("D=A")
@@ -391,76 +561,22 @@ func (code *CodeWriter) WriteCall(funcName string, numArgs int) {
 	code.write("@LCL")
 	code.write("M=D")
 
-	code.WriteGoto(funcName)
+	//code.WriteGoto(funcName)
+	code.write("@" + funcName)
+	code.write("0;JMP")
 
 	code.write("(" + returnAddr + ")") // (return-address)
 
 }
 
 func (code *CodeWriter) WriteReturn() {
-
-	/*
-	   FRAME = LCL         // FRAME is a temporary var
-	   RET = *(FRAME-5)    // put the return-address in a temporary var
-	   *ARG = pop()        // reposition the return value for the caller
-	   SP = ARG + 1        // restore SP of the caller
-	   THAT = *(FRAME - 1) // restore THAT of the caller
-	   THIS = *(FRAME - 2) // restore THIS of the caller
-	   ARG = *(FRAME - 3)  // restore ARG of the caller
-	   LCL = *(FRAME - 4)  // restore LCL of the caller
-	   goto RET            // goto return-address (in the caller's code)
-	*/
-
-	code.write("@LCL") // FRAME = LCL
-	code.write("D=M")
-
-	code.write("@R13") // R13 -> FRAME
-	code.write("M=D")
-
-	code.write("@5") // RET = *(FRAME-5)
-	code.write("A=D-A")
-	code.write("D=M")
-	code.write("@R14") // R14 -> RET
-	code.write("M=D")
-
-	code.write("@SP") // *ARG = pop()
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@ARG")
-	code.write("A=M")
-	code.write("M=D")
-
-	code.write("D=A") // SP = ARG+1
-	code.write("@SP")
-	code.write("M=D+1")
-
-	code.write("@R13") // THAT = *(FRAME-1)
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@THAT")
-	code.write("M=D")
-
-	code.write("@R13") // THIS = *(FRAME-2)
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@THIS")
-	code.write("M=D")
-
-	code.write("@R13") // ARG = *(FRAME-3)
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@ARG")
-	code.write("M=D")
-
-	code.write("@R13") // LCL = *(FRAME-4)
-	code.write("AM=M-1")
-	code.write("D=M")
-	code.write("@LCL")
-	code.write("M=D")
-
-	code.write("@R14") // goto RET
-	code.write("A=M")
+	returnAddr := fmt.Sprintf("$RET%d", code.returnSubCount)
+	code.write(fmt.Sprintf("@%s", returnAddr))
+	code.write("D=A")
+	code.write("@$RETURN$")
 	code.write("0;JMP")
+	code.write(fmt.Sprintf("(%s)", returnAddr))
+	code.returnSubCount++
 
 }
 
