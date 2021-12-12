@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/profsergiocosta/vm-translator/command"
+	"vm-translator/command"
 )
 
 func check(e error) {

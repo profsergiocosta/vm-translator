@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/profsergiocosta/vm-translator/codewriter"
-	"github.com/profsergiocosta/vm-translator/command"
-	"github.com/profsergiocosta/vm-translator/parser"
+	"vm-translator/codewriter"
+	"vm-translator/command"
+	"vm-translator/parser"
 )
 
 func isDirectory(path string) bool {

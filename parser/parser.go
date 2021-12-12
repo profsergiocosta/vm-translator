@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/profsergiocosta/vm-translator/command"
+	"vm-translator/command"
 )
 
 type Parser struct {
