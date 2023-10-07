@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"vm-translator/command"
+	"vmtranslator-go/command"
 )
 
 func check(e error) {

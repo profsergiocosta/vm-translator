@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"vm-translator/command"
+	"vmtranslator-go/command"
 )
 
 type Parser struct {

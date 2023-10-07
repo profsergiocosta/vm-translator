@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"vm-translator/codewriter"
-	"vm-translator/command"
-	"vm-translator/parser"
+	"vmtranslator-go/codewriter"
+	"vmtranslator-go/command"
+	"vmtranslator-go/parser"
 )
 
 func isDirectory(path string) bool {

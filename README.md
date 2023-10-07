@@ -1,4 +1,11 @@
-go run vm-translator
+# gopath
+export GOPATH=$HOME/dev/go
+
+# run
+
+go run . ~/apps/nand2tetris/projects/07/StackArithmetic/SimpleAdd/SimpleAdd.vm
+
+go run vmtranslator-go
 
 Testando a versão 7:
 git checkout e6ca99ab50ae3b62d35f8049a7ea6b488588b2bd
